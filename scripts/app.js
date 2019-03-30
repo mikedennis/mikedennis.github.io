@@ -115,7 +115,7 @@
             console.log(response.result);
             var card = app.visibleCards[key];
             card.querySelector('.connections').textContent = response.result.connections;
-          }
+          } 
         }
       };
       request.open('POST', url, true);
@@ -177,6 +177,8 @@
                 app.container.removeAttribute('hidden');
                 app.isLoading = false;
               }
+            } else {
+              alert(request.statusText);
             }
           }
         };
@@ -187,7 +189,6 @@
         request.send(JSON.stringify({"method":"getblockchaininfo","params":[], "id":1, "jsonrpc":2.0}));
       }
 
-    // Iterate all of the cards and attempt to get the latest forecast data
     app.updateAll = function() {
       var keys = Object.keys(app.visibleCards);
       keys.forEach(function(key) {

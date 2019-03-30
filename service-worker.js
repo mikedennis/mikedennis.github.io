@@ -1,4 +1,4 @@
-var cacheName = 'node-remote';
+var cacheName = 'node-remote-0-0-9-0';
 var filesToCache = [
     '/',
     '/index.html',
