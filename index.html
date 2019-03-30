@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="styles/inline.css">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Add to home screen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Node Dashboard">
+    <link rel="apple-touch-icon" href="images/icons/apple-touch-icon.png">
+
+    <!-- Tile icon for windows -->
+    <meta name="msapplication-TileImage" content="images/icons/apple-touch-icon.png">
+    <meta name="msapplication-TileColor" content="#2F3BA2">
+</head>
+<body>
+    <header class="header">
+        <h1 class="header__title">Node Dashboard</h1>
+        <button id="butRefresh" class="headerButton" aria-label="Refresh"></button>
+        <button id="butAdd" class="headerButton" aria-label="Add"></button>
+    </header>
+            
+    <main class="main">
+        <div class="card cardTemplate fullnode" hidden>
+            <div class="card-last-updated" hidden></div>
+            <div class="desc">
+                <div class="name"></div>
+                <div class="key"></div>
+            </div>
+            <div class="node">
+                <div class="blocks"></div>
+                <div class="info">
+                    <div class="balance"></div>
+                    <div class="connections"></div>
+                    <div class="last-block-time"></div>                    
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="dialog-container">
+        <div class="dialog">
+            <div class="dialog-title">Add Full Node</div>
+            <div class="dialog-body">
+                <div class="dialog-rpc-settings">
+                    <label for="selectNodeType">Type:</label>
+                    <select id="selectNodeType">
+                        <option value=1>Stratis RPC</option>
+                        <option value=2>Bitcoin RPC</option>
+                    </select>
+                    <label for="nodeName">Name:</label>
+                    <input type="text" id="nodeName">
+                    <label for="nodeUrl">RPC URL:</label>
+                    <input type="url" id="nodeUrl">
+                    <label for="nodeUsername">Username:</label>
+                    <input type="text" id="nodeUsername">
+                    <label for="nodePassword">Password:</label>
+                    <input type="password" id="nodePassword">
+                </div>
+            </div>
+            <div class="dialog-buttons">
+                <button id="butAddNode" class="button">Add</button>
+                <button id="butAddCancel" class="button">Cancel</button>
+            </div>
+        </div>
+    </div>
+        
+    <div class="loader">
+        <svg viewBox="0 0 32 32" width="32" height="32">
+            <circle id="spinner" cx="16" cy="16" r="14" fill="none"></circle>
+        </svg>
+    </div>
+    
+    <script src="scripts/app.js" async></script>
+</body>
+</html>
