@@ -300,6 +300,24 @@ body {
   color: #888;
 }
 
+.fullnode .staking {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  justify-content: space-between;
+  color: whitesmoke;
+  padding: 8px;
+}
+
+.fullnode .staking .staking-info {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  flex-direction: column;
+}
+
 
 @media (max-width: 450px) {
   .fullnode .node .blocks {

@@ -2,10 +2,11 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
     <title>Node Dashboard</title>
-    <link rel="stylesheet" type="text/css" href="styles/inline.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles/inline.css">
     <link rel="manifest" href="/manifest.json">
 
     <!-- Add to home screen for Safari on iOS -->
@@ -38,6 +39,14 @@
                     <div class="balance"></div>
                     <div class="connections"></div>
                     <div class="last-block-time"></div>                    
+                </div>
+            </div> 
+            <div class="staking">
+                <div class="staking-status"></div>
+                <div class="staking-info">
+                    <div class="staking-weight"></div>
+                    <div class="staking-time"></div>
+                    <button id="butActivateStaking" style="display: none">Activate</button>
                 </div>
             </div>
         </div>

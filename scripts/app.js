@@ -63,6 +63,13 @@
       }
     };
 
+    app.setRpcRequestHeaders = function(user, password, request) {
+      var authHeader = 'Basic ' + btoa(user + ':' + password);
+      request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      request.setRequestHeader("Authorization", authHeader);
+      request.setRequestHeader('Accept', 'application/json');
+    }
+
     // creates a new card
     app.createCard = function(key) {
         var card = app.cardTemplate.cloneNode(true);
@@ -73,19 +80,72 @@
         app.visibleCards[key] = card;
     };
 
-    app.setRpcRequestHeaders = function(user, password, request) {
-      var authHeader = 'Basic ' + btoa(user + ':' + password);
-      request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      request.setRequestHeader("Authorization", authHeader);
-      request.setRequestHeader('Accept', 'application/json');
-    }
-
     app.updateCardBlockInfo = function(key, blockchaininfo) {
       var card = app.visibleCards[key];
       card.querySelector('.name').textContent = blockchaininfo.chain;
       card.querySelector('.blocks').textContent = blockchaininfo.blocks;
       var minutes = (Date.now()/1000.0 - blockchaininfo.mediantime)/60;
       card.querySelector('.last-block-time').textContent = minutes.toFixed(0) + " mins";
+    };
+
+    app.getStakingInfo = function(key, url, user, password) {    
+      var request  = new XMLHttpRequest();
+      request.onreadystatechange = function() {
+        if (request.readyState === XMLHttpRequest.DONE) {
+          if (request.status === 200) {
+            var response = JSON.parse(request.response);
+            console.log(response.result);
+            var card = app.visibleCards[key];
+            card.querySelector('.staking').hidden = false;
+            if (response.result.staking) {
+              card.querySelector('.staking').style.backgroundColor = "darkgreen";
+              card.querySelector('.staking-status').textContent = 'Staking Active';
+
+              var days = Math.floor(response.result.expectedTime / (24*3600));
+              var hours = Math.floor((response.result.expectedTime - days*24*3600) / 3600);
+              var mins = Math.floor((response.result.expectedTime - days*24*3600 - hours*3600) / 60);
+              card.querySelector('.staking-time').hidden = false;
+              card.querySelector('.staking-time').textContent =  'Time: ' + days + 'd ' + hours + 'h ' + mins + 'm';
+
+              var pct = response.result.weight/response.result.netStakeWeight * 100;
+              card.querySelector('.staking-weight').hidden = false;
+              card.querySelector('.staking-weight').textContent = 'Weight: ' + pct.toFixed(4) + '%';
+
+              card.querySelector('#butActivateStaking').style.display = "none";
+            } else {
+              card.querySelector('.staking').style.backgroundColor = "darkred";
+              card.querySelector('.staking-status').textContent = 'Staking Inactive';
+              card.querySelector('.staking-time').hidden = true;
+              card.querySelector('.staking-weight').hidden = true;
+              card.querySelector('#butActivateStaking').style.display = "block";
+            }
+          }
+        }
+      };
+      request.open('POST', url, true);
+      app.setRpcRequestHeaders(user, password, request);
+      console.log('Calling RPC getstakinginfo');
+      request.send(JSON.stringify({"method":"getstakinginfo","params":[], "id":1, "jsonrpc":2.0}));      
+    };
+
+    app.activateStaking = function(key, url, user, password) {    
+      var request  = new XMLHttpRequest();
+      request.onreadystatechange = function() {
+        if (request.readyState === XMLHttpRequest.DONE) {
+          if (request.status === 200) {
+            var response = JSON.parse(request.response);
+            console.log(response.result);
+            alert("Request send activate staking");
+            app.getStakingInfo(key, url, user, password);
+          }
+        }
+      };
+
+      var walletPassword = prompt('Wallet Password: ');
+      request.open('POST', url, true);
+      app.setRpcRequestHeaders(user, password, request);
+      console.log('Calling RPC startstaking');
+      request.send(JSON.stringify({"method":"startstaking","params":["default", walletPassword], "id":1, "jsonrpc":2.0}));       
     };
 
     app.getAccountInfo = function(key, url, user, password) {    
@@ -135,10 +195,15 @@
               // create card if it doesn't exist
               if (!app.visibleCards[key]) {
                 app.createCard(key);
+                app.visibleCards[key].querySelector('#butActivateStaking').addEventListener('click', function () { 
+                  console.log('Activate Staking');
+                  app.activateStaking(key, url, user, password);
+                });
               }
 
               // Check if card needs to be updated based upon block height
               var card = app.visibleCards[key];
+              card.querySelector('.staking').hidden = true;
               var blocks = response.result.blocks;
               var cardLastUpdatedElem = card.querySelector('.card-last-updated');
               var cardBlocks = cardLastUpdatedElem.textContent;
@@ -168,7 +233,7 @@
 
               // do any stratis specific stuff
               if (type == app.nodeTypesEnum.Stratis) {
-                // TODO: Get staking info
+                app.getStakingInfo(key, url, user, password);
               }
 
               // TODO: Where? multiple async above (maybe jquery.deferred)
@@ -211,25 +276,33 @@
       localStorage.selectedNodes = selectedNodes;
     };
 
-    /* Startup Code */
-    app.selectedNodes = localStorage.selectedNodes;
-    if (app.selectedNodes) {
-      app.selectedNodes = JSON.parse(app.selectedNodes);
-      app.selectedNodes.forEach(function(node) {
-        app.getInfo(node.key, node.url, node.user, app.getPassword(node.key), node.type);
-      });
-    }
-    else {
-      app.spinner.setAttribute('hidden', true);
-      app.isLoading = false;
-      document.getElementById('nodeName').value = "Stratis";
-      document.getElementById('nodeUrl').value = "http://127.0.0.1:16174";
-      app.toggleAddDialog(true);
-    }
+    app.startUp = function() {      
+      app.selectedNodes = localStorage.selectedNodes;
+      if (app.selectedNodes) {
+        app.selectedNodes = JSON.parse(app.selectedNodes);
+        app.selectedNodes.forEach(function(node) {
+          app.getInfo(node.key, node.url, node.user, app.getPassword(node.key), node.type);
+        });
+      }
+      else {
+        app.spinner.setAttribute('hidden', true);
+        app.isLoading = false;
+        document.getElementById('nodeName').value = "Stratis";
+        document.getElementById('nodeUrl').value = "http://127.0.0.1:16174";
+        app.toggleAddDialog(true);
+      }
+    };
 
+    /* Startup Code */
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
                .register('./service-worker.js')
-               .then(function() { console.log('Service Worker Registered'); });
-    }
+               .then(function() { 
+                 console.log('Service Worker Registered'); 
+                 app.startUp();
+                });
+    }    
+
+    // For dev comment out service worker code above and uncomment this code
+    app.startUp();
 })();
